@@ -42,7 +42,21 @@ El proyecto está estructurado en tres módulos principales:
 - **Componentes**: 3 registros base (2 operandos y 1 opcode) + 1 ALU
 - **Interface**: Control de carga independiente para cada operando y operación
 
-## 🚀 Instalación y Configuración
+## ⚙️ Esquemático
+
+A continuación se presentan los diagramas esquemáticos de los módulos principales del proyecto:
+
+### Esquemático del Módulo ALU
+![Esquemático ALU](docs/alu.png)
+
+El diagrama muestra la estructura interna de la ALU con sus entradas, salidas y la lógica de selección de operaciones.
+
+### Esquemático del Módulo TOP
+![Esquemático TOP](docs/top.png)
+
+El diagrama presenta la integración completa del sistema, mostrando cómo se conectan los registros base con la ALU para formar el módulo TOP.
+
+## 📥 Instalación y Configuración
 
 ### Prerrequisitos
 
