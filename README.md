@@ -10,8 +10,7 @@ Este proyecto implementa una **ALU (Arithmetic Logic Unit)** completa en Verilog
 - **Arquitectura parameterizable** con ancho de datos configurable
 - **Registros base** para almacenamiento de operandos
 - **Flags de estado** (zero, overflow)
-- **Testbench automatizado** con sincronización por clock
-- **50+ casos de prueba** con datos aleatorios
+- **Testbench con casos de prueba** utilizando datos aleatorios
 - **Script de simulación** automatizado
 
 ## 🏗️ Arquitectura del Sistema
@@ -36,11 +35,11 @@ El proyecto está estructurado en tres módulos principales:
 - **Características**: 
   - Enable de escritura independiente
   - Reset asíncrono
-  - Ancho parameterizable
+  - Ancho parametrizable
 
 ### 3. 🔗 Módulo TOP (`top.v`)
 - **Función**: Integración completa del sistema
-- **Componentes**: 3 registros base + 1 ALU
+- **Componentes**: 3 registros base (2 operandos y 1 opcode) + 1 ALU
 - **Interface**: Control de carga independiente para cada operando y operación
 
 ## 🚀 Instalación y Configuración
@@ -51,10 +50,6 @@ El proyecto está estructurado en tres módulos principales:
 # Ubuntu/Debian
 sudo apt-get update
 sudo apt-get install -y iverilog gtkwave
-
-# Verificar instalación
-iverilog -V
-gtkwave --version
 ```
 
 ### Descarga del Proyecto
@@ -151,7 +146,7 @@ top #(
 ### Agregar Nuevas Operaciones
 
 1. Definir nuevo código de operación en `alu.v`
-2. Implementar lógica en el bloque `always_comb`
+2. Implementar lógica en el bloque `always`
 3. Actualizar testbench con casos de prueba
 4. Ejecutar tests de validación
 
@@ -176,14 +171,6 @@ top #(
 - [ ] Documentación actualizada si es necesario
 - [ ] Commits tienen mensajes descriptivos
 - [ ] Módulos compilan sin errores o warnings
-
-### 🎯 Áreas de Mejora
-
-- **Nuevas operaciones**: División, multiplicación, operaciones de punto flotante
-- **Optimizaciones**: Reducción de latencia, área del diseño
-- **Testing**: Más casos edge, tests de stress, generación de waveforms
-- **Documentación**: Diagramas de timing, análisis de área
-- **FPGA**: Síntesis para diferentes familias, constraints
 
 ### 📝 Estilo de Código
 
