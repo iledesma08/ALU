@@ -42,12 +42,34 @@ El proyecto está estructurado en tres módulos principales:
 ### 3. 🔗 Módulo TOP (`top.v`)
 
 - **Función**: Integración completa del sistema
-- **Componentes**: 3 registros base (2 operandos y 1 opcode) + 1 ALU
+- **Componentes**: 3 registros base (2 operandos y 1 opcode) + 1 ALU + sistema de displays
 - **Interface**: Entrada multipropósito de 8 bits con control de carga independiente
 - **Características especiales**:
   - **Entrada única**: `i_data[7:0]` sirve para cargar datos A, B y operación
   - **Control por enables**: Cada enable determina qué registro se actualiza
   - **Operación de 6 bits**: Solo los 6 LSB se usan para el código de operación
+  - **Displays de 7 segmentos**: 4 displays para mostrar resultado en decimal y signo
+
+### 4. 🔢 Sistema de Displays de 7 Segmentos
+
+#### 4.1 📊 Conversor Binario a BCD (`bin_to_bcd.v`)
+- **Algoritmo**: Double Dabble para conversión binaria a BCD
+- **Capacidad**: Hasta 3 dígitos decimales (999)
+- **Manejo de signo**: Detecta números negativos en operaciones aritméticas
+
+#### 4.2 🔤 Decodificador BCD a 7 Segmentos (`bcd_to_7seg.v`)
+- **Función**: Convierte dígitos BCD (0-9) a señales de 7 segmentos
+- **Configuración**: Ánodo común (activo bajo)
+- **Enable**: Control independiente para cada display
+
+#### 4.3 🔄 Multiplexor de Displays (`display_mux.v`)
+- **Función**: Control de tiempo compartido para 4 displays
+- **Frecuencia**: ~750Hz de refrescado (imperceptible al ojo humano)
+- **Distribución**: 
+  - Display 0: Unidades
+  - Display 1: Decenas  
+  - Display 2: Centenas
+  - Display 3: Signo ("-" para negativos)
 - **Interface**: Control de carga independiente para cada operando y operación
 
 ## ⚙️ Esquemático
@@ -98,15 +120,43 @@ El proyecto incluye un archivo de constraints (`constraints/basys3.xdc`) configu
   - `i_en_B`: Botón izquierdo (btnL - pin W19)
   - `i_en_OP`: Botón derecho (btnR - pin T17)
 - **Resultados**: LEDs LD7-LD0 para el resultado de 8 bits
+- **Displays**: 4 displays de 7 segmentos para mostrar resultado en decimal y signo
+- **Flags**: LED LD8 (zero) y LED LD9 (overflow)
 - **Flags**: LD8 (zero), LD9 (overflow)
 
 ### 🚀 Modo de Uso en Hardware
 
+#### Operación Básica
+
 1. **Configurar operando A**: Ajustar switches SW7-SW0 y presionar btnU
 2. **Configurar operando B**: Ajustar switches SW7-SW0 y presionar btnL  
 3. **Configurar operación**: Ajustar switches SW5-SW0 con el código de operación y presionar btnR
-4. **Ver resultado**: Los LEDs LD7-LD0 muestran el resultado, LD8 indica zero, LD9 indica overflow
+4. **Ver resultado**: 
+   - LEDs LD7-LD0 muestran el resultado en binario
+   - Displays de 7 segmentos muestran el resultado en decimal
+   - LD8 indica zero flag, LD9 indica overflow
 5. **Reset**: Presionar btnC para reiniciar todos los registros
+
+#### 📺 Interpretación de los Displays de 7 Segmentos
+
+Los 4 displays muestran el resultado de la siguiente manera:
+
+- **Display más a la derecha (AN[0])**: Unidades (0-9)
+- **Display central derecha (AN[1])**: Decenas (0-9)  
+- **Display central izquierda (AN[2])**: Centenas (0-9)
+- **Display más a la izquierda (AN[3])**: Signo ("-" para negativos, apagado para positivos)
+
+**Ejemplos de interpretación**:
+- `  123` → Resultado: +123
+- `- 050` → Resultado: -50  
+- `  007` → Resultado: +7
+- `  000` → Resultado: 0 (también enciende LD8 - zero flag)
+
+**Notas importantes**:
+- Los displays muestran valores en formato decimal (0-255 para positivos)
+- Para operaciones aritméticas con overflow, el signo se determina automáticamente
+- Las operaciones lógicas siempre se interpretan como valores positivos
+- Los displays se actualizan dinámicamente con cada nueva operación
 
 ### 🛠️ Guía de Implementación en Vivado
 
@@ -123,7 +173,10 @@ Sigue estos pasos para sintetizar e implementar el proyecto en la placa Basys3 u
 - **Add Sources** → **Add or create design sources**
 - Agregar archivos en este orden:
   - `src/base_reg.v`
-  - `src/alu.v` 
+  - `src/alu.v`
+  - `src/bin_to_bcd.v`
+  - `src/bcd_to_7seg.v`
+  - `src/display_mux.v`
   - `src/top.v` (marcar como **top module**)
 
 #### 3. **Agregar Constraints**
@@ -156,37 +209,53 @@ Sigue estos pasos para sintetizar e implementar el proyecto en la placa Basys3 u
 
 ## 🧪 Testbench
 
-### Script de Simulación
+### Scripts de Simulación
 
 ```bash
-# Ejecutar script de simulación interactivo
+# Ejecutar simulación del sistema completo
 ./test.sh
 
-# El script preguntará qué módulo probar:
-# 1) TOP - Test completo del sistema
-# 2) Quit - Salir
+# Ejecutar simulación específica de displays de 7 segmentos
+./test_7seg.sh
 ```
+
+#### Script Principal (`test.sh`)
+El script preguntará qué módulo probar:
+- **1) TOP** - Test completo del sistema con LEDs
+- **2) Quit** - Salir
+
+#### Script de Displays (`test_7seg.sh`)
+Ejecuta pruebas específicas del sistema de displays:
+- Conversión binario a decimal
+- Manejo de números negativos
+- Multiplexado de displays
+- Verificación de segmentos
 
 ### Funcionamiento del Script
 
-El script `test.sh` automatiza todo el proceso:
+Los scripts automatizan todo el proceso:
 
 1. **Verificación de herramientas**: Confirma que `iverilog` y `vvp` están instalados
 2. **Compilación**: Compila automáticamente los módulos fuente y testbench
 3. **Simulación**: Ejecuta la simulación con el testbench
 4. **Resultados**: Muestra los resultados en tiempo real
-5. **Cleanup**: Limpia archivos temporales automáticamente
+5. **Archivos VCD**: Genera archivos de ondas para análisis en GTKWave
 
 ### Casos de Prueba
 
-El testbench automatizado incluye:
-
+#### Test Principal (`test_top.v`)
 - **50 tests aleatorios** con datos generados pseudo-aleatoriamente
-- **Sincronización por clock** para timing realista
 - **Verificación automática** de resultados esperados vs obtenidos
 - **Cobertura completa** de todas las operaciones
 - **Validación de flags** (zero, overflow)
-- **Reporte detallado** de pass/fail por test
+
+#### Test de Displays (`test_top_7seg.v`)
+- **123 + 45 = 168** - Prueba suma positiva
+- **200 - 150 = 50** - Prueba resta positiva  
+- **50 - 100 = -50** - Prueba número negativo
+- **255 & 15 = 15** - Prueba operación lógica
+- **0 + 0 = 0** - Prueba flag zero
+- **Multiplexado** - Verificación de refrescado de displays
 
 #### Ejemplo de Salida de Test
 
