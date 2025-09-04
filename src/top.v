@@ -5,8 +5,7 @@ module top #(
     parameter NB_OP = 6    // Ancho de la operacion, por defecto 6 bits
 ) (
     input wire i_clk, i_rst, i_en_A, i_en_B, i_en_OP,
-    input wire [NB_DATA-1:0] i_data_a, i_data_b,
-    input wire [NB_OP-1:0] i_op,
+    input wire [NB_DATA-1:0] i_data, // Una sola entrada de datos de 8 bits
     output wire [NB_DATA-1:0] o_result,
     output wire o_zero, o_overflow
 );
@@ -23,7 +22,7 @@ module top #(
         .i_clk(i_clk),
         .i_rst(i_rst),
         .i_en(i_en_A),
-        .i_data(i_data_a),
+        .i_data(i_data), // Misma entrada de datos
         .o_data(reg_a_out) // Salida conectada a señal interna
     );
 
@@ -33,7 +32,7 @@ module top #(
         .i_clk(i_clk),
         .i_rst(i_rst),
         .i_en(i_en_B),
-        .i_data(i_data_b),
+        .i_data(i_data), // Misma entrada de datos
         .o_data(reg_b_out) // Salida conectada a señal interna
     );
 
@@ -43,7 +42,7 @@ module top #(
         .i_clk(i_clk),
         .i_rst(i_rst),
         .i_en(i_en_OP),
-        .i_data(i_op),
+        .i_data(i_data[NB_OP-1:0]), // Solo toma los 6 LSB de los 8 bits de entrada
         .o_data(reg_op_out) // Salida conectada a señal interna
     );
 

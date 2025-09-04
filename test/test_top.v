@@ -21,8 +21,7 @@ module tb_top;
 
     // Señales del DUT
     reg i_clk, i_rst, i_en_A, i_en_B, i_en_OP;
-    reg [NB_DATA-1:0] i_data_a, i_data_b;
-    reg [NB_OP-1:0] i_op;
+    reg [NB_DATA-1:0] i_data; // Una sola entrada de datos
     wire [NB_DATA-1:0] o_result;
     wire o_zero, o_overflow;
 
@@ -50,9 +49,7 @@ module tb_top;
         .i_en_A(i_en_A),
         .i_en_B(i_en_B),
         .i_en_OP(i_en_OP),
-        .i_data_a(i_data_a),
-        .i_data_b(i_data_b),
-        .i_op(i_op),
+        .i_data(i_data), // Una sola entrada de datos
         .o_result(o_result),
         .o_zero(o_zero),
         .o_overflow(o_overflow)
@@ -162,25 +159,25 @@ module tb_top;
             op_index = $random % 8;  // Seleccionar operación aleatoria
             test_op = operations[op_index];
             
-            // Cargar A sincronizado con clock
+            // Cargar A sincronizado con clock usando la entrada multipropósito
             @(negedge i_clk);  // Cambiar datos en flanco negativo
-            i_data_a = test_a;
+            i_data = test_a;
             i_en_A = 1'b1;
             @(posedge i_clk);  // Esperar flanco positivo para que el registro capture
             @(negedge i_clk);  // Cambiar enable en flanco negativo
             i_en_A = 1'b0;
             
-            // Cargar B sincronizado con clock
+            // Cargar B sincronizado con clock usando la entrada multipropósito
             @(negedge i_clk);
-            i_data_b = test_b;
+            i_data = test_b;
             i_en_B = 1'b1;
             @(posedge i_clk);
             @(negedge i_clk);
             i_en_B = 1'b0;
             
-            // Cargar OP sincronizado con clock
+            // Cargar OP sincronizado con clock usando los 6 LSB de la entrada multipropósito
             @(negedge i_clk);
-            i_op = test_op;
+            i_data = {2'b00, test_op}; // Los 6 LSB contienen la operación
             i_en_OP = 1'b1;
             @(posedge i_clk);
             @(negedge i_clk);
@@ -232,9 +229,7 @@ module tb_top;
         i_en_A = 1'b0;
         i_en_B = 1'b0;
         i_en_OP = 1'b0;
-        i_data_a = 0;
-        i_data_b = 0;
-        i_op = 0;
+        i_data = 0; // Una sola entrada de datos
         
         // Aplicar reset
         $display("\nAplicando reset...");

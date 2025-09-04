@@ -29,7 +29,6 @@ waves/
 *.mcs
 *.ncd
 *.ucf
-*.xdc
 _xmsgs/
 
 # Archivos de backup
